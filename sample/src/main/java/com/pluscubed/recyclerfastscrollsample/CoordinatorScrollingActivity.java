@@ -22,20 +22,21 @@ public class CoordinatorScrollingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_coordinator_scrolling);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        RecyclerView view = (RecyclerView) findViewById(R.id.recyclerview);
+        RecyclerView view = findViewById(R.id.recyclerview);
         view.setAdapter(new ItemAdapter());
         view.setLayoutManager(new LinearLayoutManager(this));
 
-        RecyclerFastScroller scroller = (RecyclerFastScroller) findViewById(R.id.fast_scroller);
+        RecyclerFastScroller scroller = findViewById(R.id.fast_scroller);
         scroller.attachRecyclerView(view);
-        CoordinatorLayout coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator);
-        AppBarLayout appBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
+        CoordinatorLayout coordinatorLayout = findViewById(R.id.coordinator);
+        AppBarLayout appBarLayout = findViewById(R.id.app_bar);
         scroller.attachAppBarLayout(coordinatorLayout, appBarLayout);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     /*@Override
@@ -81,7 +82,7 @@ public class CoordinatorScrollingActivity extends AppCompatActivity {
             public ViewHolder(View itemView) {
                 super(itemView);
 
-                textView = (TextView) itemView.findViewById(R.id.list_item_text);
+                textView = itemView.findViewById(R.id.list_item_text);
 
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override

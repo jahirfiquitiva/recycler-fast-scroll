@@ -2,6 +2,7 @@ package com.pluscubed.recyclerfastscrollsample;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -54,14 +55,14 @@ public class ScrollingActivity extends AppCompatActivity implements ColorChooser
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_simple_scrolling);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        RecyclerView view = (RecyclerView) findViewById(R.id.recyclerview);
+        RecyclerView view = findViewById(R.id.recyclerview);
         view.setAdapter(new ItemAdapter());
         view.setLayoutManager(new LinearLayoutManager(this));
 
-        mRecyclerFastScroller = (RecyclerFastScroller) findViewById(R.id.fast_scroller);
+        mRecyclerFastScroller = findViewById(R.id.fast_scroller);
         mRecyclerFastScroller.attachRecyclerView(view);
 
         setTitle(R.string.title);
@@ -97,14 +98,19 @@ public class ScrollingActivity extends AppCompatActivity implements ColorChooser
                 break;
         }
     }
-
+    
+    @SuppressWarnings("deprecation")
     public void showAboutDialog() {
-        new MaterialDialog.Builder(this)
+        MaterialDialog.Builder builder = new MaterialDialog.Builder(this)
                 .title(getString(R.string.about_dialog_title, BuildConfig.VERSION_NAME))
                 .positiveText(R.string.dismiss)
-                .content(Html.fromHtml(getString(R.string.about_body)))
-                .iconRes(R.mipmap.ic_launcher)
-                .show();
+                .iconRes(R.mipmap.ic_launcher);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            builder.content(Html.fromHtml(getString(R.string.about_body), Html.FROM_HTML_MODE_LEGACY));
+        }else{
+            builder.content(Html.fromHtml(getString(R.string.about_body)));
+        }
+        builder.show();
     }
 
 
@@ -128,7 +134,7 @@ public class ScrollingActivity extends AppCompatActivity implements ColorChooser
         new ColorChooserDialog.Builder(this, colorChooserDialogTitle)
                 .accentMode(title == R.string.handle_pressed_color)
                 .preselect(preselectColor)
-                .show();
+                .show(this);
     }
 
     void customizeTouchTargetWidth() {
@@ -246,7 +252,7 @@ public class ScrollingActivity extends AppCompatActivity implements ColorChooser
             public ViewHolder(View itemView) {
                 super(itemView);
 
-                button = (Button) itemView.findViewById(R.id.list_item_main_button);
+                button = itemView.findViewById(R.id.list_item_main_button);
 
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -285,5 +291,10 @@ public class ScrollingActivity extends AppCompatActivity implements ColorChooser
                 });
             }
         }
+    }
+    
+    @Override
+    public void onColorChooserDismissed(@NonNull ColorChooserDialog dialog) {
+        dialog.dismiss();
     }
 }

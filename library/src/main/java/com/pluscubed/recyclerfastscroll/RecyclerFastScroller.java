@@ -143,6 +143,7 @@ public class RecyclerFastScroller extends FrameLayout {
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                if (v == null || event == null) return false;
                 if (mOnTouchListener != null) {
                     mOnTouchListener.onTouch(v, event);
                 }
@@ -175,7 +176,8 @@ public class RecyclerFastScroller extends FrameLayout {
                         AppBarLayout.Behavior behavior = (AppBarLayout.Behavior) params.getBehavior();
                         if (behavior != null) {
                             behavior.onNestedPreScroll(mCoordinatorLayout, mAppBarLayout,
-                                    RecyclerFastScroller.this, 0, dY, new int[2]);
+                                                       RecyclerFastScroller.this, 0, dY, new int[2],
+                                                       ViewCompat.TYPE_TOUCH);
                         }
                     }
 
