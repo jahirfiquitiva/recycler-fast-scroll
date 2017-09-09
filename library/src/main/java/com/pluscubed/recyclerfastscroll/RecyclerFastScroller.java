@@ -18,6 +18,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -38,6 +39,7 @@ public class RecyclerFastScroller extends FrameLayout {
 
     int mAppBarLayoutOffset;
 
+    SwipeRefreshLayout mSwipeRefreshLayout;
     RecyclerView mRecyclerView;
     CoordinatorLayout mCoordinatorLayout;
     AppBarLayout mAppBarLayout;
@@ -55,13 +57,14 @@ public class RecyclerFastScroller extends FrameLayout {
 
     private boolean mHideOverride;
     private RecyclerView.Adapter mAdapter;
-    private RecyclerView.AdapterDataObserver mAdapterObserver = new RecyclerView.AdapterDataObserver() {
-        @Override
-        public void onChanged() {
-            super.onChanged();
-            requestLayout();
-        }
-    };
+    private RecyclerView.AdapterDataObserver mAdapterObserver =
+            new RecyclerView.AdapterDataObserver() {
+                @Override
+                public void onChanged() {
+                    super.onChanged();
+                    requestLayout();
+                }
+            };
 
     public RecyclerFastScroller(Context context) {
         this(context, null, 0);
@@ -75,10 +78,12 @@ public class RecyclerFastScroller extends FrameLayout {
         this(context, attrs, defStyleAttr, 0);
     }
 
-    public RecyclerFastScroller(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public RecyclerFastScroller(Context context, AttributeSet attrs, int defStyleAttr,
+                                int defStyleRes) {
         super(context, attrs, defStyleAttr);
 
-        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.RecyclerFastScroller, defStyleAttr, defStyleRes);
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.RecyclerFastScroller,
+                                                      defStyleAttr, defStyleRes);
 
         mBarColor = a.getColor(
                 R.styleable.RecyclerFastScroller_rfs_barColor,
@@ -97,14 +102,15 @@ public class RecyclerFastScroller extends FrameLayout {
                 RecyclerFastScrollerUtils.convertDpToPx(context, 24));
 
         mHideDelay = a.getInt(R.styleable.RecyclerFastScroller_rfs_hideDelay,
-                DEFAULT_AUTO_HIDE_DELAY);
+                              DEFAULT_AUTO_HIDE_DELAY);
 
         mHidingEnabled = a.getBoolean(R.styleable.RecyclerFastScroller_rfs_hidingEnabled, true);
 
         a.recycle();
 
         int fortyEightDp = RecyclerFastScrollerUtils.convertDpToPx(context, 48);
-        setLayoutParams(new ViewGroup.LayoutParams(fortyEightDp, ViewGroup.LayoutParams.MATCH_PARENT));
+        setLayoutParams(
+                new ViewGroup.LayoutParams(fortyEightDp, ViewGroup.LayoutParams.MATCH_PARENT));
 
         mBar = new View(context);
         mHandle = new View(context);
@@ -125,8 +131,9 @@ public class RecyclerFastScroller extends FrameLayout {
                         mAnimator.cancel();
                     }
                     mAnimator = new AnimatorSet();
-                    ObjectAnimator animator2 = ObjectAnimator.ofFloat(RecyclerFastScroller.this, View.TRANSLATION_X,
-                            mHiddenTranslationX);
+                    ObjectAnimator animator2 =
+                            ObjectAnimator.ofFloat(RecyclerFastScroller.this, View.TRANSLATION_X,
+                                                   mHiddenTranslationX);
                     animator2.setInterpolator(new FastOutLinearInInterpolator());
                     animator2.setDuration(150);
                     mHandle.setEnabled(false);
@@ -149,6 +156,7 @@ public class RecyclerFastScroller extends FrameLayout {
                 }
                 if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                     mHandle.setPressed(true);
+                    if (mSwipeRefreshLayout != null) mSwipeRefreshLayout.setEnabled(false);
                     mRecyclerView.stopScroll();
 
                     int nestedScrollAxis = ViewCompat.SCROLL_AXIS_NONE;
@@ -169,11 +177,15 @@ public class RecyclerFastScroller extends FrameLayout {
                             newHandlePressedYAdjustedToInitial - mLastPressedYAdjustedToInitial;
 
                     int dY = (int) ((deltaPressedYFromLastAdjustedToInitial / mInitialBarHeight) *
-                            (mRecyclerView.computeVerticalScrollRange() + (mAppBarLayout == null ? 0 : mAppBarLayout.getTotalScrollRange())));
+                            (mRecyclerView.computeVerticalScrollRange() +
+                                    (mAppBarLayout == null ? 0
+                                                           : mAppBarLayout.getTotalScrollRange())));
 
                     if (mCoordinatorLayout != null && mAppBarLayout != null) {
-                        CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) mAppBarLayout.getLayoutParams();
-                        AppBarLayout.Behavior behavior = (AppBarLayout.Behavior) params.getBehavior();
+                        CoordinatorLayout.LayoutParams params =
+                                (CoordinatorLayout.LayoutParams) mAppBarLayout.getLayoutParams();
+                        AppBarLayout.Behavior behavior =
+                                (AppBarLayout.Behavior) params.getBehavior();
                         if (behavior != null) {
                             behavior.onNestedPreScroll(mCoordinatorLayout, mAppBarLayout,
                                                        RecyclerFastScroller.this, 0, dY, new int[2],
@@ -189,6 +201,8 @@ public class RecyclerFastScroller extends FrameLayout {
                     mLastPressedYAdjustedToInitial = -1;
 
                     mRecyclerView.stopNestedScroll();
+
+                    if (mSwipeRefreshLayout != null) mSwipeRefreshLayout.setEnabled(true);
 
                     mHandle.setPressed(false);
                     postAutoHide();
@@ -227,7 +241,8 @@ public class RecyclerFastScroller extends FrameLayout {
     }
 
     /**
-     * @param scrollBarColor Scroll bar color. Alpha will be set to ~22% to match stock scrollbar.
+     * @param scrollBarColor
+     *         Scroll bar color. Alpha will be set to ~22% to match stock scrollbar.
      */
     public void setBarColor(@ColorInt int scrollBarColor) {
         mBarColor = scrollBarColor;
@@ -239,7 +254,8 @@ public class RecyclerFastScroller extends FrameLayout {
     }
 
     /**
-     * @param hideDelay the delay in millis to hide the scrollbar
+     * @param hideDelay
+     *         the delay in millis to hide the scrollbar
      */
     public void setHideDelay(int hideDelay) {
         mHideDelay = hideDelay;
@@ -250,7 +266,8 @@ public class RecyclerFastScroller extends FrameLayout {
     }
 
     /**
-     * @param touchTargetWidth In pixels, less than or equal to 48dp
+     * @param touchTargetWidth
+     *         In pixels, less than or equal to 48dp
      */
     public void setTouchTargetWidth(int touchTargetWidth) {
         mTouchTargetWidth = touchTargetWidth;
@@ -263,8 +280,11 @@ public class RecyclerFastScroller extends FrameLayout {
             throw new RuntimeException("Touch target width cannot be larger than 48dp!");
         }
 
-        mBar.setLayoutParams(new LayoutParams(touchTargetWidth, ViewGroup.LayoutParams.MATCH_PARENT, GravityCompat.END));
-        mHandle.setLayoutParams(new LayoutParams(touchTargetWidth, ViewGroup.LayoutParams.MATCH_PARENT, GravityCompat.END));
+        mBar.setLayoutParams(new LayoutParams(touchTargetWidth, ViewGroup.LayoutParams.MATCH_PARENT,
+                                              GravityCompat.END));
+        mHandle.setLayoutParams(
+                new LayoutParams(touchTargetWidth, ViewGroup.LayoutParams.MATCH_PARENT,
+                                 GravityCompat.END));
 
         updateHandleColorsAndInset();
         updateBarColorAndInset();
@@ -275,7 +295,8 @@ public class RecyclerFastScroller extends FrameLayout {
     }
 
     /**
-     * @param hidingEnabled whether hiding is enabled
+     * @param hidingEnabled
+     *         whether hiding is enabled
      */
     public void setHidingEnabled(boolean hidingEnabled) {
         mHidingEnabled = hidingEnabled;
@@ -289,14 +310,18 @@ public class RecyclerFastScroller extends FrameLayout {
 
         if (!RecyclerFastScrollerUtils.isRTL(getContext())) {
             drawable.addState(View.PRESSED_ENABLED_STATE_SET,
-                    new InsetDrawable(new ColorDrawable(mHandlePressedColor), mBarInset, 0, 0, 0));
+                              new InsetDrawable(new ColorDrawable(mHandlePressedColor), mBarInset,
+                                                0, 0, 0));
             drawable.addState(View.EMPTY_STATE_SET,
-                    new InsetDrawable(new ColorDrawable(mHandleNormalColor), mBarInset, 0, 0, 0));
+                              new InsetDrawable(new ColorDrawable(mHandleNormalColor), mBarInset, 0,
+                                                0, 0));
         } else {
             drawable.addState(View.PRESSED_ENABLED_STATE_SET,
-                    new InsetDrawable(new ColorDrawable(mHandlePressedColor), 0, 0, mBarInset, 0));
+                              new InsetDrawable(new ColorDrawable(mHandlePressedColor), 0, 0,
+                                                mBarInset, 0));
             drawable.addState(View.EMPTY_STATE_SET,
-                    new InsetDrawable(new ColorDrawable(mHandleNormalColor), 0, 0, mBarInset, 0));
+                              new InsetDrawable(new ColorDrawable(mHandleNormalColor), 0, 0,
+                                                mBarInset, 0));
         }
         RecyclerFastScrollerUtils.setViewBackground(mHandle, drawable);
     }
@@ -311,6 +336,10 @@ public class RecyclerFastScroller extends FrameLayout {
         }
         drawable.setAlpha(57);
         RecyclerFastScrollerUtils.setViewBackground(mBar, drawable);
+    }
+
+    public void attachSwipeRefreshLayout(SwipeRefreshLayout swipeRefreshLayout) {
+        mSwipeRefreshLayout = swipeRefreshLayout;
     }
 
     public void attachRecyclerView(RecyclerView recyclerView) {
@@ -346,7 +375,8 @@ public class RecyclerFastScroller extends FrameLayout {
                 show(true);
 
                 MarginLayoutParams layoutParams = (MarginLayoutParams) getLayoutParams();
-                layoutParams.topMargin = mAppBarLayout.getHeight() + verticalOffset; //AppBarLayout actual height
+                layoutParams.topMargin =
+                        mAppBarLayout.getHeight() + verticalOffset; //AppBarLayout actual height
 
                 mAppBarLayoutOffset = -verticalOffset;
 
@@ -362,7 +392,8 @@ public class RecyclerFastScroller extends FrameLayout {
     /**
      * Show the fast scroller and hide after delay
      *
-     * @param animate whether to animate showing the scroller
+     * @param animate
+     *         whether to animate showing the scroller
      */
     public void show(final boolean animate) {
         requestLayout();
@@ -381,7 +412,8 @@ public class RecyclerFastScroller extends FrameLayout {
                             mAnimator.cancel();
                         }
                         mAnimator = new AnimatorSet();
-                        ObjectAnimator animator = ObjectAnimator.ofFloat(RecyclerFastScroller.this, View.TRANSLATION_X, 0);
+                        ObjectAnimator animator = ObjectAnimator
+                                .ofFloat(RecyclerFastScroller.this, View.TRANSLATION_X, 0);
                         animator.setInterpolator(new LinearOutSlowInInterpolator());
                         animator.setDuration(100);
                         animator.addListener(new AnimatorListenerAdapter() {
@@ -416,7 +448,8 @@ public class RecyclerFastScroller extends FrameLayout {
         if (mRecyclerView == null) return;
 
         int scrollOffset = mRecyclerView.computeVerticalScrollOffset() + mAppBarLayoutOffset;
-        int verticalScrollRange = mRecyclerView.computeVerticalScrollRange() + (mAppBarLayout == null ? 0 : mAppBarLayout.getTotalScrollRange())
+        int verticalScrollRange = mRecyclerView.computeVerticalScrollRange() +
+                (mAppBarLayout == null ? 0 : mAppBarLayout.getTotalScrollRange())
                 + mRecyclerView.getPaddingBottom();
 
         int barHeight = mBar.getHeight();
@@ -437,7 +470,8 @@ public class RecyclerFastScroller extends FrameLayout {
 
         float y = ratio * (barHeight - calculatedHandleHeight);
 
-        mHandle.layout(mHandle.getLeft(), (int) y, mHandle.getRight(), (int) y + calculatedHandleHeight);
+        mHandle.layout(mHandle.getLeft(), (int) y, mHandle.getRight(),
+                       (int) y + calculatedHandleHeight);
     }
 
     void updateRvScroll(int dY) {

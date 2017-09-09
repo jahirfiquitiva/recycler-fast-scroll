@@ -42,7 +42,7 @@ dependencies {
     compile project(':library')
     compile 'com.android.support:appcompat-v7:26.0.2'
     compile 'com.android.support:design:26.0.2'
-    compile 'com.afollestad.material-dialogs:core:0.9.4.7'
-    compile 'com.afollestad.material-dialogs:commons:0.9.4.7'
-    //compile 'com.pluscubed:recycler-fast-scroll:0.3.1'
+    compile 'com.afollestad.material-dialogs:core:8869ff6'
+    compile 'com.afollestad.material-dialogs:commons:8869ff6'
+    // compile 'com.pluscubed:recycler-fast-scroll:0.3.1'
 }
