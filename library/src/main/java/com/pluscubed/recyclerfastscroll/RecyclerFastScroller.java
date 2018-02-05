@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.support.annotation.ColorInt;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
@@ -157,12 +158,12 @@ public class RecyclerFastScroller extends FrameLayout {
                 if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                     mHandle.setPressed(true);
                     if (mSwipeRefreshLayout != null) mSwipeRefreshLayout.setEnabled(false);
-                    mRecyclerView.stopScroll();
+                    if (mRecyclerView != null) mRecyclerView.stopScroll();
 
                     int nestedScrollAxis = ViewCompat.SCROLL_AXIS_NONE;
                     nestedScrollAxis |= ViewCompat.SCROLL_AXIS_VERTICAL;
 
-                    mRecyclerView.startNestedScroll(nestedScrollAxis);
+                    if (mRecyclerView != null) mRecyclerView.startNestedScroll(nestedScrollAxis);
 
                     mInitialBarHeight = mBar.getHeight();
                     mLastPressedYAdjustedToInitial = event.getY() + mHandle.getY() + mBar.getY();
@@ -176,10 +177,12 @@ public class RecyclerFastScroller extends FrameLayout {
                     float deltaPressedYFromLastAdjustedToInitial =
                             newHandlePressedYAdjustedToInitial - mLastPressedYAdjustedToInitial;
 
+                    int verticalScrollRange =
+                            mRecyclerView != null ? mRecyclerView.computeVerticalScrollRange() : 0;
+                    int appBarScrollRange =
+                            mAppBarLayout != null ? mAppBarLayout.getTotalScrollRange() : 0;
                     int dY = (int) ((deltaPressedYFromLastAdjustedToInitial / mInitialBarHeight) *
-                            (mRecyclerView.computeVerticalScrollRange() +
-                                    (mAppBarLayout == null ? 0
-                                                           : mAppBarLayout.getTotalScrollRange())));
+                            (verticalScrollRange + appBarScrollRange));
 
                     if (mCoordinatorLayout != null && mAppBarLayout != null) {
                         CoordinatorLayout.LayoutParams params =
@@ -200,7 +203,7 @@ public class RecyclerFastScroller extends FrameLayout {
                 } else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
                     mLastPressedYAdjustedToInitial = -1;
 
-                    mRecyclerView.stopNestedScroll();
+                    if (mRecyclerView != null) mRecyclerView.stopNestedScroll();
 
                     if (mSwipeRefreshLayout != null) mSwipeRefreshLayout.setEnabled(true);
 
@@ -342,7 +345,7 @@ public class RecyclerFastScroller extends FrameLayout {
         mSwipeRefreshLayout = swipeRefreshLayout;
     }
 
-    public void attachRecyclerView(RecyclerView recyclerView) {
+    public void attachRecyclerView(@NonNull RecyclerView recyclerView) {
         mRecyclerView = recyclerView;
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -351,7 +354,7 @@ public class RecyclerFastScroller extends FrameLayout {
                 RecyclerFastScroller.this.show(true);
             }
         });
-        if (recyclerView.getAdapter() != null) attachAdapter(recyclerView.getAdapter());
+        if (mRecyclerView.getAdapter() != null) attachAdapter(mRecyclerView.getAdapter());
     }
 
     public void attachAdapter(@Nullable RecyclerView.Adapter adapter) {
