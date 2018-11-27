@@ -5,6 +5,18 @@ apply plugin: 'com.github.dcendents.android-maven'
 android {
     compileSdkVersion 28
     buildToolsVersion "28.0.3"
+    
+    lintOptions {
+        warningsAsErrors true
+        disable 'MissingTranslation',
+                'GoogleAppIndexingWarning',
+                'UnusedResources',
+                'ContentDescription',
+                'RtlSymmetry',
+                'RtlHardcoded',
+                'RtlEnabled',
+                'Overdraw'
+    }
 
     defaultConfig {
         minSdkVersion 14
