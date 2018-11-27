@@ -12,6 +12,17 @@ android {
         versionCode 36
         versionName "0.3.6"
     }
+    
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    packagingOptions {
+        pickFirst 'META-INF/core_debug.kotlin_module'
+        pickFirst 'META-INF/core_release.kotlin_module'
+        pickFirst 'META-INF/library_debug.kotlin_module'
+        pickFirst 'META-INF/library_release.kotlin_module'
+    }
 }
 
 dependencies {
