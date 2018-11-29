@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.pluscubed.recyclerfastscroll.RecyclerFastScroller;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -62,8 +63,9 @@ public class CoordinatorScrollingActivity extends AppCompatActivity {
         ItemAdapter() {
         }
         
+        @NonNull
         @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(CoordinatorScrollingActivity.this)
                 .inflate(R.layout.list_item, parent, false);
             return new ViewHolder(view);

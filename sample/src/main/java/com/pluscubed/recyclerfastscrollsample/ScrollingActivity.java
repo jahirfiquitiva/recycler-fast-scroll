@@ -175,7 +175,7 @@ public class ScrollingActivity extends AppCompatActivity
                                     @NonNull DialogAction dialogAction) {
                     int input =
                         Integer.parseInt(materialDialog.getInputEditText().getText().toString());
-                    mRecyclerFastScroller.setTouchTargetWidth(convertDpToPx(input));
+                    mRecyclerFastScroller.setTouchTargetWidth(UtilsKt.getDpToPx(input));
                 }
             })
             .show();
@@ -314,9 +314,5 @@ public class ScrollingActivity extends AppCompatActivity
     @Override
     public void onColorChooserDismissed(@NonNull ColorChooserDialog dialog) {
         dialog.dismiss();
-    }
-    
-    private int convertDpToPx(int dp) {
-        return (int) (dp * getResources().getDisplayMetrics().density + 0.5F);
     }
 }

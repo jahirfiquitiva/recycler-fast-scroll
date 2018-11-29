@@ -1,6 +1,7 @@
 package com.pluscubed.recyclerfastscroll
 
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.view.View
@@ -31,6 +32,8 @@ internal fun Context.resolveColor(@AttrRes color: Int): Int {
     return resId
 }
 
-internal fun Context.convertDpToPx(dp: Float): Int {
-    return (dp * resources.displayMetrics.density + 0.5F).toInt()
-}
+internal inline val Float.dpToPx: Float
+    get() = this * Resources.getSystem().displayMetrics.density
+
+internal inline val Int.dpToPx: Int
+    get() = toFloat().dpToPx.toInt()

@@ -94,21 +94,27 @@ open class RecyclerFastScroller @JvmOverloads constructor(
         set(touchTargetWidth) {
             mTouchTargetWidth = touchTargetWidth
             
-            val eightDp = context.convertDpToPx(8F)
+            val eightDp = 8.dpToPx
             mBarInset = mTouchTargetWidth - eightDp
             
-            val fortyEightDp = context.convertDpToPx(48F)
+            val fortyEightDp = 48.dpToPx
             if (mTouchTargetWidth > fortyEightDp) {
                 throw RuntimeException("Touch target width cannot be larger than 48dp!")
             }
             
-            mBar.layoutParams = FrameLayout.LayoutParams(
+            val mBarParams = FrameLayout.LayoutParams(
                 touchTargetWidth, ViewGroup.LayoutParams.MATCH_PARENT, GravityCompat.END)
-            mHandle?.layoutParams = FrameLayout.LayoutParams(
+            mBar.layoutParams = mBarParams
+            updateViewLayout(mBar, mBarParams)
+            
+            val mHandleParams = FrameLayout.LayoutParams(
                 touchTargetWidth, ViewGroup.LayoutParams.MATCH_PARENT, GravityCompat.END)
+            mHandle?.layoutParams = mHandleParams
+            updateViewLayout(mHandle, mHandleParams)
             
             updateHandleColorsAndInset()
             updateBarColorAndInset()
+            requestLayout()
         }
     
     var isHidingEnabled: Boolean
@@ -137,7 +143,7 @@ open class RecyclerFastScroller @JvmOverloads constructor(
             context.resolveColor(R.attr.colorAccent))
         
         mTouchTargetWidth = a.getDimensionPixelSize(
-            R.styleable.RecyclerFastScroller_rfs_touchTargetWidth, context.convertDpToPx(24F))
+            R.styleable.RecyclerFastScroller_rfs_touchTargetWidth, 24.dpToPx)
         
         hideDelay = a.getInt(
             R.styleable.RecyclerFastScroller_rfs_hideDelay, DEFAULT_AUTO_HIDE_DELAY)
@@ -146,7 +152,7 @@ open class RecyclerFastScroller @JvmOverloads constructor(
         
         a.recycle()
         
-        val fortyEightDp = context.convertDpToPx(48F)
+        val fortyEightDp = 48.dpToPx
         layoutParams = ViewGroup.LayoutParams(fortyEightDp, ViewGroup.LayoutParams.MATCH_PARENT)
         
         mBar = View(context)
@@ -160,7 +166,7 @@ open class RecyclerFastScroller @JvmOverloads constructor(
         
         mMinScrollHandleHeight = fortyEightDp
         
-        val eightDp = context.convertDpToPx(8F)
+        val eightDp = 8.dpToPx
         mHiddenTranslationX =
             (if (context.isRTL) -1.0F else 1.0F) * eightDp
         
